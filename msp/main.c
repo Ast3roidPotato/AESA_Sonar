@@ -28,6 +28,8 @@
 /* Standard Includes */
 #include "csHFXT.h"
 #include "lib/servoDriver.h"
+#include "lib/masterClock.h"
+#include "lib/transmitter.h"
 #include <stdbool.h>
 #include <stdint.h>
 

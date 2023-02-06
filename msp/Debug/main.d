@@ -20,6 +20,8 @@ main.obj: C:/ti/ccs1210/ccs/ccs_base/arm/include/CMSIS/cmsis_ccs.h
 main.obj: C:/ti/ccs1210/ccs/ccs_base/arm/include/system_msp432p4111.h
 main.obj: ../csHFXT.h
 main.obj: ../lib/servoDriver.h
+main.obj: ../lib/masterClock.h
+main.obj: ../lib/transmitter.h
 main.obj: C:/ti/ccs1210/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdbool.h
 
 ../main.c:
@@ -61,6 +63,10 @@ C:/ti/ccs1210/ccs/ccs_base/arm/include/system_msp432p4111.h:
 ../csHFXT.h:
 
 ../lib/servoDriver.h:
+
+../lib/masterClock.h:
+
+../lib/transmitter.h:
 
 C:/ti/ccs1210/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdbool.h:
 

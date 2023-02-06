@@ -14,7 +14,9 @@ ORDERED_OBJS += \
 "./main.obj" \
 "./startup_msp432p4111_ccs.obj" \
 "./system_msp432p4111.obj" \
+"./lib/masterClock.obj" \
 "./lib/servoDriver.obj" \
+"./lib/transmitter.obj" \
 "../msp432p4111.cmd" \
 $(GEN_CMDS__FLAG) \
 -llibc.a \
@@ -160,8 +162,8 @@ AESA.hex: $(EXE_OUTPUTS)
 # Other Targets
 clean:
 	-$(RM) $(BIN_OUTPUTS__QUOTED)$(EXE_OUTPUTS__QUOTED)
-	-$(RM) "csHFXT.obj" "main.obj" "startup_msp432p4111_ccs.obj" "system_msp432p4111.obj" "lib\servoDriver.obj" 
-	-$(RM) "csHFXT.d" "main.d" "startup_msp432p4111_ccs.d" "system_msp432p4111.d" "lib\servoDriver.d" 
+	-$(RM) "csHFXT.obj" "main.obj" "startup_msp432p4111_ccs.obj" "system_msp432p4111.obj" "lib\masterClock.obj" "lib\servoDriver.obj" "lib\transmitter.obj" 
+	-$(RM) "csHFXT.d" "main.d" "startup_msp432p4111_ccs.d" "system_msp432p4111.d" "lib\masterClock.d" "lib\servoDriver.d" "lib\transmitter.d" 
 	-@echo 'Finished clean'
 	-@echo ' '
 
