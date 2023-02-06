@@ -27,7 +27,7 @@
 
 /* Standard Includes */
 #include "csHFXT.h"
-#include "servoDriver.h"
+#include "lib/servoDriver.h"
 #include <stdbool.h>
 #include <stdint.h>
 

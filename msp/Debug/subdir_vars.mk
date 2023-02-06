@@ -11,42 +11,36 @@ CMD_SRCS += \
 C_SRCS += \
 ../csHFXT.c \
 ../main.c \
-../servoDriver.c \
 ../startup_msp432p4111_ccs.c \
 ../system_msp432p4111.c 
 
 C_DEPS += \
 ./csHFXT.d \
 ./main.d \
-./servoDriver.d \
 ./startup_msp432p4111_ccs.d \
 ./system_msp432p4111.d 
 
 OBJS += \
 ./csHFXT.obj \
 ./main.obj \
-./servoDriver.obj \
 ./startup_msp432p4111_ccs.obj \
 ./system_msp432p4111.obj 
 
 OBJS__QUOTED += \
 "csHFXT.obj" \
 "main.obj" \
-"servoDriver.obj" \
 "startup_msp432p4111_ccs.obj" \
 "system_msp432p4111.obj" 
 
 C_DEPS__QUOTED += \
 "csHFXT.d" \
 "main.d" \
-"servoDriver.d" \
 "startup_msp432p4111_ccs.d" \
 "system_msp432p4111.d" 
 
 C_SRCS__QUOTED += \
 "../csHFXT.c" \
 "../main.c" \
-"../servoDriver.c" \
 "../startup_msp432p4111_ccs.c" \
 "../system_msp432p4111.c" 
 
