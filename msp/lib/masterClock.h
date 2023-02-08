@@ -16,8 +16,8 @@ extern "C" {
 #include <stdint.h>
 
 struct MasterClock {
-    //initializes itself - don't need to expose init
-    uint64_t (*now)(void);
+    // Gives time since power on in quarter microsecond increments
+    uint32_t (*now)(void);
 
 };
 

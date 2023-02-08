@@ -3,6 +3,7 @@
 "./startup_msp432p4111_ccs.obj"
 "./system_msp432p4111.obj"
 "./lib/masterClock.obj"
+"./lib/serial.obj"
 "./lib/servoDriver.obj"
 "./lib/transmitter.obj"
 "../msp432p4111.cmd"

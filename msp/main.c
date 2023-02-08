@@ -27,8 +27,9 @@
 
 /* Standard Includes */
 #include "csHFXT.h"
-#include "lib/servoDriver.h"
 #include "lib/masterClock.h"
+// #include "lib/serial.h"
+#include "lib/servoDriver.h"
 #include "lib/transmitter.h"
 #include <stdbool.h>
 #include <stdint.h>
@@ -41,19 +42,40 @@ void main(void) {
     /* Stop Watchdog timer */
     WDT_A->CTL = WDT_A_CTL_PW | WDT_A_CTL_HOLD;
 
-    configHFXT();
-    // Configure P1.1 for S1 input
-    P1->SEL0 &= ~BIT1; // set P1.1 for GPIO
-    P1->SEL1 &= ~BIT1;
-    P1->DIR &= ~BIT1; // set P1.1 as input
-    P1->OUT |= BIT1;  // enable internal pull-up resistor on P1.1
-    P1->REN |= BIT1;
+    struct MasterClock clock = MasterClock.new();
+    // struct Serial serial = Serial.new();
 
-    initServoMotor();
+    // serial.println("Starting up...");
 
-    TIMER_A2->CCR[1] = SERVO_MIN_ANGLE;
+    // Configure pin 5.6 to be digital output GPIO
+    P5->SEL0 = 0;
+    P5->SEL1 = 0;
+    P5->DIR = 0xFF;
+    P5->OUT = 0;
 
+    int pulseDelay = 400000; // assume ~0.25us per tick
+    int lastPulseTime = 0;
+    int pulseCount = 0;
+    int pulseCountTarget = 20;
+
+    uint32_t oldTime = 0;
+    uint32_t currentTime;
+
+    // serial.println("Starting loop...");
 
     while (1) {
+        currentTime = clock.now();
+        if (currentTime - lastPulseTime > pulseDelay) {
+            while (pulseCount < pulseCountTarget) {
+                currentTime = clock.now();
+                if (currentTime - oldTime > 46) {
+                    P5->OUT ^= BIT6;
+                    oldTime = currentTime;
+                    pulseCount++;
+                }
+            }
+            pulseCount = 0;
+            lastPulseTime = currentTime;
+        }
     }
 }
