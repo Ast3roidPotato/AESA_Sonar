@@ -22,4 +22,4 @@ static void new() {
     return retval;
 }
 
-const struct MasterClockClass MasterClock = {.new = new};
+const struct MasterClockClass MasterClock = {.new = new}; //Initializes MasterClockClass
