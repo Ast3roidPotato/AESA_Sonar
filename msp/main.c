@@ -27,22 +27,28 @@
 
 /* Standard Includes */
 #include "csHFXT.h"
+#include "lib/ADC.h"
+#include "lib/ingest.h"
 #include "lib/masterClock.h"
-// #include "lib/serial.h"
+#include "lib/serial.h"
 #include "lib/servoDriver.h"
 #include "lib/transmitter.h"
 #include <stdbool.h>
 #include <stdint.h>
 
-/**
- * main.c
- */
+#define TX_ARRAY_PORT P5
+#define PULSE_HALF_PERIOD 46 // Optimally 50, but is lower due to timing errors
+
+int mapAnalogReadToTickDelay(int analogRead) { return (analogRead - 2045) / 4; }
+
 void main(void) {
     volatile int i;
     /* Stop Watchdog timer */
     WDT_A->CTL = WDT_A_CTL_PW | WDT_A_CTL_HOLD;
 
     struct MasterClock clock = MasterClock.new();
+    // struct ADC potInput = ADC.new(P6,0);
+    struct Ingest analog = Ingest.new();
     // struct Serial serial = Serial.new();
 
     // serial.println("Starting up...");
@@ -58,21 +64,29 @@ void main(void) {
     int pulseCount = 0;
     int pulseCountTarget = 20;
 
-    uint32_t oldTime = 0;
+    int phaseTickOffset = 0;
+    int pulseTrainStartTime = 0;
+    const int *pulseTrainPtr = &pulseTrainStartTime;
+
+    // uint32_t oldTime = 0;
     uint32_t currentTime;
 
     // serial.println("Starting loop...");
+    struct Transmitter testSingleTransmitter = Transmitter.new(TX_ARRAY_PORT, 0, PULSE_HALF_PERIOD, pulseTrainPtr);
 
     while (1) {
+        // serial.println("Pot Phase: %d", mapAnalogReadToTickDelay(analog.analogRead(0)));
+        phaseTickOffset = mapAnalogReadToTickDelay(analog.analogRead(0));
         currentTime = clock.now();
         if (currentTime - lastPulseTime > pulseDelay) {
             while (pulseCount < pulseCountTarget) {
                 currentTime = clock.now();
-                if (currentTime - oldTime > 46) {
-                    P5->OUT ^= BIT6;
-                    oldTime = currentTime;
-                    pulseCount++;
-                }
+                // if (currentTime - oldTime > 46) {
+                //     P5->OUT ^= BIT0;
+                //     pulseCount++;
+                //     oldTime = currentTime;
+                // }
+                testSingleTransmitter.doTransmit(&testSingleTransmitter, 0, currentTime);
             }
             pulseCount = 0;
             lastPulseTime = currentTime;

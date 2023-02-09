@@ -14,6 +14,8 @@ ORDERED_OBJS += \
 "./main.obj" \
 "./startup_msp432p4111_ccs.obj" \
 "./system_msp432p4111.obj" \
+"./lib/ADC.obj" \
+"./lib/ingest.obj" \
 "./lib/masterClock.obj" \
 "./lib/serial.obj" \
 "./lib/servoDriver.obj" \
@@ -163,8 +165,8 @@ AESA.hex: $(EXE_OUTPUTS)
 # Other Targets
 clean:
 	-$(RM) $(BIN_OUTPUTS__QUOTED)$(EXE_OUTPUTS__QUOTED)
-	-$(RM) "csHFXT.obj" "main.obj" "startup_msp432p4111_ccs.obj" "system_msp432p4111.obj" "lib\masterClock.obj" "lib\serial.obj" "lib\servoDriver.obj" "lib\transmitter.obj" 
-	-$(RM) "csHFXT.d" "main.d" "startup_msp432p4111_ccs.d" "system_msp432p4111.d" "lib\masterClock.d" "lib\serial.d" "lib\servoDriver.d" "lib\transmitter.d" 
+	-$(RM) "csHFXT.obj" "main.obj" "startup_msp432p4111_ccs.obj" "system_msp432p4111.obj" "lib\ADC.obj" "lib\ingest.obj" "lib\masterClock.obj" "lib\serial.obj" "lib\servoDriver.obj" "lib\transmitter.obj" 
+	-$(RM) "csHFXT.d" "main.d" "startup_msp432p4111_ccs.d" "system_msp432p4111.d" "lib\ADC.d" "lib\ingest.d" "lib\masterClock.d" "lib\serial.d" "lib\servoDriver.d" "lib\transmitter.d" 
 	-@echo 'Finished clean'
 	-@echo ' '
 

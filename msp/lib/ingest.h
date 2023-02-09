@@ -1,6 +1,10 @@
 /*! \file */
-#ifndef ADC_H_
-#define ADC_H_
+/*!
+ * ingest.h
+ */
+
+#ifndef INGEST_H_
+#define INGEST_H_
 
 //*****************************************************************************
 //
@@ -13,22 +17,18 @@ extern "C" {
 #endif
 
 #include "msp.h"
-#include <stdint.h>
 
-struct ADC {
-    // initializes itself - don't need to expose init
-    DIO_PORT_Odd_Interruptable_Type *port;
-    uint16_t pinNum;
-    void (*readPot)(void);
-    int (*getPhase)(void);
+struct Ingest {
+    void (*init)(void);
+    int (*analogRead)(int pin);
 };
 
-extern const struct ADCClass {
-    struct ADC (*new)(DIO_PORT_Odd_Interruptable_Type *port, uint16_t pinNum);
-} ADC;
+extern const struct IngestClass {
+    struct Ingest (*new)(void);
+} Ingest;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif
+#endif /* INGEST_H_ */

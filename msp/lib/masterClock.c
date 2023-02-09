@@ -9,7 +9,7 @@ static volatile uint32_t currTime = 0;
 
 uint16_t getCurrentTimerValue() { return TIMER_A0->R; }
 
-void init() {
+static void init() {
     // do init things
     configHFXT();
     // serial = Serial.new();

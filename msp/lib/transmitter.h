@@ -16,14 +16,18 @@ extern "C" {
 #include <stdint.h>
 
 struct Transmitter {
-    // initializes itself - don't need to expose init
-    int pin;
-    uint16_t *phaseShiftAddress;
-    void (*doTransmit)(struct Transmmitter *this);
+    DIO_PORT_Odd_Interruptable_Type *port;
+    int pin;                  // pin number - just a normal integer, what you see on the board silkscreen
+    const int *pulseTrainStartTime; // const pointer to the variable that holds the start time of the sonar chirp
+    int pulsePeriod;
+    uint32_t lastActiveTime;
+    // returns 1 output was toggled, 0 if it didn't
+    int (*doTransmit)(struct Transmitter *this, int tickDelay, uint32_t time);
 };
 
 extern const struct TransmitterClass {
-    struct Transmitter (*new)(void);
+    // phase shift address is the number of MASTER CLOCK TICKS to shift the phase needs external function fo convert
+    struct Transmitter (*new)(DIO_PORT_Odd_Interruptable_Type *port, int pin, int pulsePeriod, const int *pulseTrainStartTime);
 } Transmitter;
 
 #ifdef __cplusplus

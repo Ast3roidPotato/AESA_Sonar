@@ -2,6 +2,8 @@
 "./main.obj"
 "./startup_msp432p4111_ccs.obj"
 "./system_msp432p4111.obj"
+"./lib/ADC.obj"
+"./lib/ingest.obj"
 "./lib/masterClock.obj"
 "./lib/serial.obj"
 "./lib/servoDriver.obj"
