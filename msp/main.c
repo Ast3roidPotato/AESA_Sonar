@@ -42,7 +42,7 @@
 int mapAnalogReadToTickDelay(int analogRead) { return (analogRead - 2045) / 4; }
 
 void main(void) {
-    volatile int i;
+    int i;
     /* Stop Watchdog timer */
     WDT_A->CTL = WDT_A_CTL_PW | WDT_A_CTL_HOLD;
 
@@ -72,24 +72,54 @@ void main(void) {
     uint32_t currentTime;
 
     // serial.println("Starting loop...");
-    struct Transmitter testSingleTransmitter = Transmitter.new(TX_ARRAY_PORT, 0, PULSE_HALF_PERIOD, pulseTrainPtr);
+    // struct Transmitter testSingleTransmitter = Transmitter.new(TX_ARRAY_PORT, 0, PULSE_HALF_PERIOD, pulseTrainPtr);
+
+    struct Transmitter transmitterArray[8];
+    for (i = 0; i < 8; ++i) {
+        transmitterArray[i] = Transmitter.new(TX_ARRAY_PORT, i, PULSE_HALF_PERIOD, pulseTrainPtr);
+    }
+
+    int toggleCountArray[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
     while (1) {
         // serial.println("Pot Phase: %d", mapAnalogReadToTickDelay(analog.analogRead(0)));
         phaseTickOffset = mapAnalogReadToTickDelay(analog.analogRead(0));
         currentTime = clock.now();
         if (currentTime - lastPulseTime > pulseDelay) {
+            pulseTrainStartTime = currentTime;
             while (pulseCount < pulseCountTarget) {
                 currentTime = clock.now();
+                int cumulativePhaseOffset = 0;
+                int totalToggles = 0;
+                if (phaseTickOffset > 0) {
+                    for (i = 0; i < 8; ++i) {
+                        if (toggleCountArray[i] < 2 * pulseCountTarget) {
+                            if (transmitterArray[i].doTransmit(&transmitterArray[i], cumulativePhaseOffset, currentTime)) {
+                                ++toggleCountArray[i];
+                                ++totalToggles;
+                            }
+                        }
+                        cumulativePhaseOffset += phaseTickOffset;
+                    }
+                    if (totalToggles >= 16) { // makes sure that every transmitter has completed their pulse.
+                        ++pulseCount;
+                    }
+                } else {
+                    // reverse above loop - only do AFTER testing to confirm that it works for positive phase shifts
+                }
+
                 // if (currentTime - oldTime > 46) {
                 //     P5->OUT ^= BIT0;
                 //     pulseCount++;
                 //     oldTime = currentTime;
                 // }
-                testSingleTransmitter.doTransmit(&testSingleTransmitter, 0, currentTime);
+                // testSingleTransmitter.doTransmit(&testSingleTransmitter, 0, currentTime);
             }
             pulseCount = 0;
             lastPulseTime = currentTime;
+            for (i = 0; i < 8; ++i) {
+                toggleCountArray[i] = 0;
+            }
         }
     }
 }
