@@ -21,7 +21,7 @@ struct Transmitter {
     const int *pulseTrainStartTime; // const pointer to the variable that holds the start time of the sonar chirp
     int pulsePeriod;
     uint32_t lastActiveTime;
-    // returns 1 output was toggled, 0 if it didn't
+    // returns 1 if the output was toggled, 0 if it wasn't toggled
     int (*doTransmit)(struct Transmitter *this, int tickDelay, uint32_t time);
 };
 
