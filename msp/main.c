@@ -35,6 +35,7 @@
 #include "lib/transmitter.h"
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 #define TX_ARRAY_PORT P5
 #define PULSE_HALF_PERIOD 46 // Optimally 50, but is lower due to timing errors
@@ -117,9 +118,7 @@ void main(void) {
             }
             pulseCount = 0;
             lastPulseTime = currentTime;
-            for (i = 0; i < 8; ++i) {
-                toggleCountArray[i] = 0;
-            }
+            memset(toggleCountArray, 0, sizeof(toggleCountArray) * sizeof(int));
         }
     }
 }
