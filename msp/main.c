@@ -1,28 +1,4 @@
 /*! \file */
-/******************************************************************************
- * MSP432 Lab Exercise 5-2
- *
- * Description: Using timers to generate PWM signals to drive a servo motor
- *
- * Author: Jacob Consalvi
- * Last-modified:
- *
- * An external HF crystal between HFXIN & HFXOUT is required for MCLK,SMCLK
- *
- *                 MSP432P411x
- *             -------------------
- *         /|\|                   |
- *          | |              P1.1 |<---- S1
- *          --|RST                |
- *            |      (TA2.1) P5.6 |----> Servo
- *            |                   |
- *            |              PJ.2 |------
- *            |                   |     |
- *            |                   |    HFXT @ 48MHz
- *            |                   |     |
- *            |              PJ.3 |------
- *
- *******************************************************************************/
 #include "msp.h"
 
 /* Standard Includes */
@@ -36,11 +12,15 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define TX_ARRAY_PORT P5
-#define PULSE_HALF_PERIOD 46 // Optimally 50, but is lower due to timing errors
+#define TX_ARRAY_PORT_2 P6
+#define PULSE_HALF_PERIOD 1                                         // 17             // Optimally 50, but is lower due to timing errors
+#define PULSE_DELAY_COMPENSATION 0                                  // Compensate for the time it takes to execute the loop
+#define PULSE_DELAY_COMPENSATION_START 8 * PULSE_DELAY_COMPENSATION // Compensate for the time it takes to execute the loop
 
-int mapAnalogReadToTickDelay(int analogRead) { return (analogRead - 2045) / 4; }
+int mapAnalogReadToTickDelay(int analogRead) { return (analogRead - 2045) >> 2; }
 
 void main(void) {
     int i;
@@ -54,16 +34,10 @@ void main(void) {
 
     // serial.println("Starting up...");
 
-    // Configure pin 5.6 to be digital output GPIO
-    P5->SEL0 = 0;
-    P5->SEL1 = 0;
-    P5->DIR = 0xFF;
-    P5->OUT = 0;
-
     int pulseDelay = 400000; // assume ~0.25us per tick
     int lastPulseTime = 0;
-    int pulseCount = 0;
-    int pulseCountTarget = 20;
+    // int pulseCount = 0;
+    int pulseCountTarget = 10;
 
     int phaseTickOffset = 0;
     int pulseTrainStartTime = 0;
@@ -72,53 +46,77 @@ void main(void) {
     // uint32_t oldTime = 0;
     uint32_t currentTime;
 
-    // serial.println("Starting loop...");
     // struct Transmitter testSingleTransmitter = Transmitter.new(TX_ARRAY_PORT, 0, PULSE_HALF_PERIOD, pulseTrainPtr);
 
     struct Transmitter transmitterArray[8];
     for (i = 0; i < 8; ++i) {
-        transmitterArray[i] = Transmitter.new(TX_ARRAY_PORT, i, PULSE_HALF_PERIOD, pulseTrainPtr);
+        if (i == 3)
+            continue;
+        int j = i > 3 ? i - 1 : i;
+        // serial.println("Initializing transmitter %d", i);
+        transmitterArray[j] = Transmitter.new(P5, i, PULSE_HALF_PERIOD, pulseTrainPtr);
     }
+
+    transmitterArray[7] = Transmitter.new(P3, 7, PULSE_HALF_PERIOD, pulseTrainPtr);
 
     int toggleCountArray[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
+    // serial.println("Starting loop...");
     while (1) {
-        // serial.println("Pot Phase: %d", mapAnalogReadToTickDelay(analog.analogRead(0)));
+        // serial.println("Pot Phase: %d ", mapAnalogReadToTickDelay(analog.analogRead(0)));
         phaseTickOffset = mapAnalogReadToTickDelay(analog.analogRead(0));
+        // phaseTickOffset = 0;
         currentTime = clock.now();
         if (currentTime - lastPulseTime > pulseDelay) {
             pulseTrainStartTime = currentTime;
-            while (pulseCount < pulseCountTarget) {
-                currentTime = clock.now();
-                int cumulativePhaseOffset = 0;
-                int totalToggles = 0;
-                if (phaseTickOffset > 0) {
+            int minToggles = 9999;
+            int cumulativePhaseOffset;
+            while (minToggles == 9999 || minToggles <= pulseCountTarget - 1) {
+                cumulativePhaseOffset = 0;
+                minToggles = 9999;
+                if (phaseTickOffset >= 0) {
+                    // int delayCompensation = PULSE_DELAY_COMPENSATION_START;
                     for (i = 0; i < 8; ++i) {
-                        if (toggleCountArray[i] < 2 * pulseCountTarget) {
+                        if (toggleCountArray[i] < pulseCountTarget) {
                             if (transmitterArray[i].doTransmit(&transmitterArray[i], cumulativePhaseOffset, currentTime)) {
                                 ++toggleCountArray[i];
-                                ++totalToggles;
+                                if (toggleCountArray[i] < minToggles) {
+                                    minToggles = toggleCountArray[i];
+                                }
+                                // serial.println("TX %d toggled.", i);
                             }
                         }
+                        // delayCompensation -= PULSE_DELAY_COMPENSATION;
                         cumulativePhaseOffset += phaseTickOffset;
                     }
-                    if (totalToggles >= 16) { // makes sure that every transmitter has completed their pulse.
-                        ++pulseCount;
-                    }
                 } else {
+                    phaseTickOffset *= -1;
                     // reverse above loop - only do AFTER testing to confirm that it works for positive phase shifts
+                    // int delayCompensation = PULSE_DELAY_COMPENSATION_START;
+                    for (i = 7; i >= 0; --i) {
+                        if (toggleCountArray[i] < pulseCountTarget) {
+                            if (transmitterArray[i].doTransmit(&transmitterArray[i], cumulativePhaseOffset, currentTime)) {
+                                ++toggleCountArray[i];
+                                if (toggleCountArray[i] < minToggles) {
+                                    minToggles = toggleCountArray[i];
+                                }
+                                // serial.println("TX %d toggled.", i);
+                            }
+                        }
+                        // delayCompensation -= PULSE_DELAY_COMPENSATION;
+                        cumulativePhaseOffset += phaseTickOffset;
+                    }
                 }
 
-                // if (currentTime - oldTime > 46) {
-                //     P5->OUT ^= BIT0;
-                //     pulseCount++;
-                //     oldTime = currentTime;
-                // }
-                // testSingleTransmitter.doTransmit(&testSingleTransmitter, 0, currentTime);
+                // pulseCount += testSingleTransmitter.doTransmit(&testSingleTransmitter, 0, currentTime);
+                // serial.println("Pulse Count: %d", pulseCount);
+                currentTime = clock.now();
             }
-            pulseCount = 0;
+
+            // TX_ARRAY_PORT->OUT ^= 0xFF;
+            // pulseCount = 0;
             lastPulseTime = currentTime;
-            memset(toggleCountArray, 0, sizeof(toggleCountArray) * sizeof(int));
+            memset(toggleCountArray, 0, sizeof(toggleCountArray));
         }
     }
 }
