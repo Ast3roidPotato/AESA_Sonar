@@ -1,6 +1,6 @@
 #include "transmitter.h"
 
-static void init(DIO_PORT_Odd_Interruptable_Type *port, int pin) {
+static void init(DIO_PORT_Even_Interruptable_Type *port, int pin) {
     // Configure target pin as GPIO output
     port->SEL0 &= ~(1 << pin);
     port->SEL1 &= ~(1 << pin);
@@ -32,7 +32,7 @@ static int doTransmit(struct Transmitter *this, int tickDelay, uint32_t time) {
     return 0;
 }
 
-static struct Transmitter new(DIO_PORT_Odd_Interruptable_Type *port, int pin, int pulsePeriod, const int *pulseTrainStartTime) {
+static struct Transmitter new(DIO_PORT_Even_Interruptable_Type *port, int pin, int pulsePeriod, const int *pulseTrainStartTime) {
     struct Transmitter t;
     t.port = port;
     t.pin = pin;

@@ -16,7 +16,7 @@ extern "C" {
 #include <stdint.h>
 
 struct Transmitter {
-    DIO_PORT_Odd_Interruptable_Type *port;
+    DIO_PORT_Even_Interruptable_Type *port;
     int pin;                  // pin number - just a normal integer, what you see on the board silkscreen
     const int *pulseTrainStartTime; // const pointer to the variable that holds the start time of the sonar chirp
     int pulsePeriod;
@@ -27,7 +27,7 @@ struct Transmitter {
 
 extern const struct TransmitterClass {
     // phase shift address is the number of MASTER CLOCK TICKS to shift the phase needs external function fo convert
-    struct Transmitter (*new)(DIO_PORT_Odd_Interruptable_Type *port, int pin, int pulsePeriod, const int *pulseTrainStartTime);
+    struct Transmitter (*new)(DIO_PORT_Even_Interruptable_Type *port, int pin, int pulsePeriod, const int *pulseTrainStartTime);
 } Transmitter;
 
 #ifdef __cplusplus
