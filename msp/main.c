@@ -14,6 +14,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-void main(void) {
+#include "receiver.h"
 
+void main(void) {
+    /* Stop Watchdog timer */
+    WDT_A->CTL = WDT_A_CTL_PW | WDT_A_CTL_HOLD;
+
+    initReceiver();
+if ((LISTEN_PIN_PORT -> IN & LISTEN_PIN) == LISTEN_PIN) {
+    startTimer();
+}
 }
