@@ -3,12 +3,11 @@
 
 /* Standard Includes */
 #include "csHFXT.h"
-#include "lib/ADC.h"
-#include "lib/ingest.h"
-#include "lib/masterClock.h"
-#include "lib/serial.h"
-#include "lib/servoDriver.h"
-#include "lib/transmitter.h"
+//#include "ADC.h"
+//#include "ingest.h"
+//#include "lib/serial.h"
+//#include "lib/servoDriver.h"
+//#include "lib/transmitter.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -21,7 +20,15 @@ void main(void) {
     WDT_A->CTL = WDT_A_CTL_PW | WDT_A_CTL_HOLD;
 
     initReceiver();
-    if ((LISTEN_PIN_PORT -> IN & LISTEN_PIN) == LISTEN_PIN) {
+ while(true) {
+    if (((LISTEN_PIN_PORT -> IN) & LISTEN_PIN) == LISTEN_PIN) {
         startTimer();
+        while (((CAPTURE_PIN_PORT -> IN) & CAPTURE_PIN) != CAPTURE_PIN) {
+
+        }
+        stopTimer();
+        int time = getEchoTime();
+        time = time;
     }
+ }
 }

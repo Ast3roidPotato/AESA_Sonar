@@ -2,7 +2,7 @@
 /*!
  * transmitter.h
  *
- * Description: 
+ * Description:
  *
  *  Created on: 02/12/23
  *      Author:
@@ -23,11 +23,12 @@ extern "C"
 #endif
 
 #include "msp.h"
+#include "csHFXT.h"
 
 #define LISTEN_PIN_PORT P1
-#define LISTEN_PIN 0b00000010 // P1.1
-#define CAPTURE_PIN_PORT P7
-#define CAPTURE_PIN 0b00001000 // P1.1
+#define LISTEN_PIN BIT5 // P1.5
+#define CAPTURE_PIN_PORT P3
+#define CAPTURE_PIN BIT0 // P3.0
 
 /*Inits timer, listen pin, and capture pin*/
 extern void initReceiver(void);
