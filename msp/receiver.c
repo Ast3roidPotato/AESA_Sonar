@@ -47,6 +47,10 @@ int getEchoTime() {
     return echoTime;
 }
 
+int getDistance() {
+    return (343000*echoTime)/3000000;
+}
+
 void TA1_0_IRQHandler() {
     stopTimer();
     echoTime = TIMER_A1->CCR[0];
