@@ -1,9 +1,13 @@
 #include "receiver.h"
 #include "msp.h"
+#include "csHFXT.h"
 
-int echoTime = 0;
+volatile int echoTime = 0;
+int overflow = 1;
+
 
 void initReceiver() {
+    configHFXT();
     initListenPin();
     initCaptureTimer();
     initCapturePin();
@@ -17,31 +21,39 @@ void initListenPin() {
 
 void initCapturePin() {
     CAPTURE_PIN_PORT -> DIR &= ~(LISTEN_PIN);
-    LISTEN_PIN_PORT -> SEL0 &= ~(LISTEN_PIN);
-    LISTEN_PIN_PORT -> SEL1 &= ~(LISTEN_PIN);
+    CAPTURE_PIN_PORT -> SEL0 &= ~(LISTEN_PIN);
+    CAPTURE_PIN_PORT -> SEL1 &= ~(LISTEN_PIN);
 }
 
 void initCaptureTimer() {
-    TIMER_A0 -> CTL = 0x0;                  // Enable Timer A0 w /1, in stop mode
-    TIMER_A0 -> CCTL[0] = 0x4111;           // Enable capture mode with inturrupt, 7.3
-    NVIC->ISER[0] |= 1<<9;                  // Enable interrupt
-   __enable_irq();                          // Enable global interrupt
+    TIMER_A1 -> CTL = 0b1011000010;                  // Enable Timer A0 w /1, in stop mode
+    TIMER_A1 -> CCTL[1] = 0b0100000100010000;        // Enable capture mode with inturrupt, 7.3
+    TIMER_A1 -> EX0 = 0b11;
+    NVIC->ISER[0] |= 1<<11 | 1<<10;                           // Enable interrupt
+   __enable_irq();                                   // Enable global interrupt
 }
 
 void startTimer() {
-    TIMER_A0 -> CTL |= BIT4;
+    TIMER_A1 -> CTL |= BIT5;
 }
 
 void stopTimer() {
-    TIMER_A0 -> CTL &= ~BIT4;
+    TIMER_A1 -> CTL &= ~BIT5;
+    int rawTime = TIMER_A1->R;
+    echoTime = rawTime * overflow;
 }
 
 int getEchoTime() {
     return echoTime;
 }
 
-void TA0_0_IRQHandler(void) {
+void TA1_0_IRQHandler() {
     stopTimer();
-    echoTime = TIMER_A0->CCR[0];
-    TIMER_A0->CTL &= ~(BIT0); // clear flag
+    echoTime = TIMER_A1->CCR[0];
+    TIMER_A1->CCTL[1] &= ~(BIT0); // clear flag
+}
+
+void TA1_N_IRQHandler() {
+    overflow += 1;
+    TIMER_A1->CTL &= ~(BIT0); // clear flag
 }

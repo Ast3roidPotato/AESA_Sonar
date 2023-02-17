@@ -21,7 +21,7 @@ void main(void) {
     WDT_A->CTL = WDT_A_CTL_PW | WDT_A_CTL_HOLD;
 
     initReceiver();
-if ((LISTEN_PIN_PORT -> IN & LISTEN_PIN) == LISTEN_PIN) {
-    startTimer();
-}
+    if ((LISTEN_PIN_PORT -> IN & LISTEN_PIN) == LISTEN_PIN) {
+        startTimer();
+    }
 }
