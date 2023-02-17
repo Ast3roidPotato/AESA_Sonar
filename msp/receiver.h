@@ -38,6 +38,8 @@ extern void startTimer(void);
 extern void stopTimer(void);
 /*Gets the timer value of the echo*/
 extern int getEchoTime(void);
+/*Converts timer value of echo into distance in mm*/
+extern int getDistance(void);
 
 //*****************************************************************************
 //

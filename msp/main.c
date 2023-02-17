@@ -28,7 +28,8 @@ void main(void) {
         }
         stopTimer();
         int time = getEchoTime();
-        time = time;
+        int distance = getDistance();
+        distance = distance;
     }
  }
 }
