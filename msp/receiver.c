@@ -3,7 +3,7 @@
 #include "csHFXT.h"
 
 volatile int echoTime = 0;
-int overflow = 1;
+int overflow = 0;
 
 
 void initReceiver() {
@@ -40,7 +40,7 @@ void startTimer() {
 void stopTimer() {
     TIMER_A1 -> CTL &= ~BIT5;
     int rawTime = TIMER_A1->R;
-    echoTime = rawTime * overflow;
+    echoTime = rawTime + (0xFFFF*overflow);
 }
 
 int getEchoTime() {
@@ -48,7 +48,7 @@ int getEchoTime() {
 }
 
 int getDistance() {
-    return (343000*echoTime)/3000000;
+    return (SPEED_OF_SOUND*echoTime)/TIMER_TICKS_SEC;
 }
 
 void TA1_0_IRQHandler() {

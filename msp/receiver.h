@@ -30,6 +30,9 @@ extern "C"
 #define CAPTURE_PIN_PORT P3
 #define CAPTURE_PIN BIT0 // P3.0
 
+#define SPEED_OF_SOUND 343000           // speed of sound in mm/s
+#define TIMER_TICKS_SEC 3000000         // ticks of clock / sec
+
 /*Inits timer, listen pin, and capture pin*/
 extern void initReceiver(void);
 /*Starts timer in Up Mode*/
