@@ -23,7 +23,7 @@ void main(void) {
  while(true) {
     if (((LISTEN_PIN_PORT -> IN) & LISTEN_PIN) == LISTEN_PIN) {
         startTimer();
-        while (((CAPTURE_PIN_PORT -> IN) & CAPTURE_PIN) != CAPTURE_PIN) {
+        while (((LISTEN_PIN_PORT -> IN) & LISTEN_PIN) == LISTEN_PIN) {
 
         }
         stopTimer();
