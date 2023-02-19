@@ -21,9 +21,9 @@ void main(void) {
 
     initReceiver();
  while(true) {
-    if (((LISTEN_PIN_PORT -> IN) & LISTEN_PIN) == LISTEN_PIN) {
+    if (((CAPTURE_PIN_PORT -> IN) & CAPTURE_PIN) == CAPTURE_PIN) {
         startTimer();
-        while (((LISTEN_PIN_PORT -> IN) & LISTEN_PIN) == LISTEN_PIN) {
+        while (((CAPTURE_PIN_PORT -> IN) & CAPTURE_PIN) == CAPTURE_PIN) {
 
         }
         stopTimer();
