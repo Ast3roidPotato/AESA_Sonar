@@ -26,9 +26,9 @@ extern "C"
 #include "csHFXT.h"
 
 #define LISTEN_PIN_PORT P1
-#define LISTEN_PIN BIT5 // P1.5
+#define LISTEN_PIN BIT5 // P1.1
 #define CAPTURE_PIN_PORT P3
-#define CAPTURE_PIN BIT0 // P3.0
+#define CAPTURE_PIN BIT0 // P7.3
 
 #define SPEED_OF_SOUND 343000           // speed of sound in mm/s
 #define TIMER_TICKS_SEC 3000000         // ticks of clock / sec
@@ -41,7 +41,7 @@ extern void startTimer(void);
 extern void stopTimer(void);
 /*Gets the timer value of the echo*/
 extern int getEchoTime(void);
-/*Converts timer value of echo into distance in mm*/
+
 extern int getDistance(void);
 
 //*****************************************************************************

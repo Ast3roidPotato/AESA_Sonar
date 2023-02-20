@@ -5,7 +5,8 @@
 #include "csHFXT.h"
 //#include "ADC.h"
 //#include "ingest.h"
-//#include "lib/serial.h"
+#include "serial.h"
+#include "rgbLED.h"
 //#include "lib/servoDriver.h"
 //#include "lib/transmitter.h"
 #include <stdbool.h>
@@ -20,16 +21,19 @@ void main(void) {
     WDT_A->CTL = WDT_A_CTL_PW | WDT_A_CTL_HOLD;
 
     initReceiver();
+    RGBLED_init();
+    struct Serial bop = Serial.new();
  while(true) {
-    if (((CAPTURE_PIN_PORT -> IN) & CAPTURE_PIN) == CAPTURE_PIN) {
-        startTimer();
-        while (((CAPTURE_PIN_PORT -> IN) & CAPTURE_PIN) == CAPTURE_PIN) {
+     if (((CAPTURE_PIN_PORT -> IN) & CAPTURE_PIN) == CAPTURE_PIN) {
+            startTimer();
+            while (((CAPTURE_PIN_PORT -> IN) & CAPTURE_PIN) == CAPTURE_PIN) {
 
+            }
+            stopTimer();
+            int time = getEchoTime();
+            int distance = getDistance();
+            bop.print("%d", distance);
         }
-        stopTimer();
-        int time = getEchoTime();
-        int distance = getDistance();
-        distance = distance;
-    }
+     }
  }
-}
+
