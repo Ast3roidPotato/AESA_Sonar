@@ -6,98 +6,96 @@
 #include <WiFi.h>             // needed to connect to WiFi
 
 
+// -------------------------- START WEB CODE SECTION --------------------------
+// Attention: some of the web code section may contain snippets of code from various tutorials and example code from documentation
+
+// Used for ARRAY_LENGTH of the sensor angle and distance values
 const int ARRAY_LENGTH = 2;
 
-IPAddress local_IP(192, 168, 1, 1);
-IPAddress gateway(192, 168, 1, 2);
-IPAddress subnet(255, 255, 255, 0);
-
-AsyncWebServer server(80); 
+AsyncWebServer server(80);
 WebSocketsServer webSocket = WebSocketsServer(81);
 
-void webSocketEvent(byte num, WStype_t type, uint8_t *payload, size_t length) { // the parameters of this callback function are always the same -> num: id of the client who send the event, type: type of message, payload: actual data sent and length: length of payload
-    switch (type) {                                                             // switch on the type of information sent
-    case WStype_DISCONNECTED:                                                   // if a client is disconnected, then type == WStype_DISCONNECTED
+void webSocketEvent(byte num, WStype_t type, uint8_t *payload, size_t length) {
+    switch (type) {
+    case WStype_DISCONNECTED:
         Serial.println("Client " + String(num) + " disconnected");
         break;
-    case WStype_CONNECTED: // if a client is connected, then type == WStype_CONNECTED
+    case WStype_CONNECTED: // when a client connects, this branch is taken
         Serial.println("Client " + String(num) + " connected");
 
         break;
-    case WStype_TEXT: // if a client has sent data, then type == WStype_TEXT
+    case WStype_TEXT: // when a client sends data, this branch is taken
         break;
     }
 }
 
-
-#define EAP_ANONYMOUS_IDENTITY "anonymous@rose-hulman.edu" 
-#define EAP_IDENTITY "_PUT_USER_HERE_@rose-hulman.edu" 
+// parameters used for connecting to eduroam
+#define EAP_ANONYMOUS_IDENTITY "anonymous@rose-hulman.edu"
+#define EAP_IDENTITY "_PUT_USER_HERE_@rose-hulman.edu"
 #define EAP_PASSWORD "_PUT_PASSWORD_HERE_"
 
-const char* ssid = "eduroam";
+const char *ssid = "eduroam";
 
 void setupServerStuff() {
-    if (!SPIFFS.begin()) {
+    if (!SPIFFS.begin()) { // This is used to read files from flash memory
         Serial.println("SPIFFS could not initialize");
     }
 
     Serial.begin(115200);
 
-    WiFi.mode(WIFI_MODE_STA);
+    WiFi.mode(WIFI_MODE_STA); // Configure ESP32 as a station (client)
 
-    WiFi.begin(ssid, WPA2_AUTH_PEAP, EAP_ANONYMOUS_IDENTITY, EAP_IDENTITY, EAP_PASSWORD);
+    WiFi.begin(ssid, WPA2_AUTH_PEAP, EAP_ANONYMOUS_IDENTITY, EAP_IDENTITY, EAP_PASSWORD); // Connect to eduroam
 
-    while (WiFi.status() != WL_CONNECTED) {
+    while (WiFi.status() != WL_CONNECTED) { // Wait for the Wi-Fi to connect
         delay(500);
-        Serial.println("Connecting to WiFi..");
+        Serial.println("Connecting to WiFi...");
     }
 
     Serial.print("MAC: ");
-    Serial.println(WiFi.macAddress());
+    Serial.println(WiFi.macAddress()); // Print the MAC address (used for adding ESP32 to the network via EIT)
 
     Serial.print("ESP32 IP on the WiFi network: ");
-    Serial.println(WiFi.localIP());
+    Serial.println(WiFi.localIP()); // Print the IP address - used for connecting to the ESP32 from a web browser
 
-    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) { // define here wat the webserver needs to do
+    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) { // When a client requests the root page, this function is called
         Serial.println("Somone's attempting to load the page.");
-        request->send(SPIFFS, "/webpage.html", "text/html");
+        request->send(SPIFFS, "/webpage.html", "text/html"); // Send the webpage to the client
     });
 
-    server.onNotFound([](AsyncWebServerRequest *request) { request->send(404, "text/plain", "File not found"); });
+    server.onNotFound([](AsyncWebServerRequest *request) { request->send(404, "text/plain", "File not found"); }); // If the client requests a file that doesn't exist, send a 404 error
 
     server.serveStatic("/", SPIFFS, "/");
 
     webSocket.begin();                 // start websocket
-    webSocket.onEvent(webSocketEvent); // define a callback function -> what does the ESP32 need to do when an event from the websocket is received? -> run function "webSocketEvent()"
+    webSocket.onEvent(webSocketEvent); // if there's an incomming websocket message, go to function 'webSocketEvent'
 
-    server.begin();
+    server.begin(); // Start the TCP server
 }
 
-// Simple function to send information to the web clients
 void sendJson(String l_type, String l_value) {
-    String jsonString = "";                   // create a JSON string for sending data to the client
-    StaticJsonDocument<200> doc;              // create JSON container
-    JsonObject object = doc.to<JsonObject>(); // create a JSON Object
-    object["type"] = l_type;                  // write data into the JSON object
+    String jsonString = "";
+    StaticJsonDocument<200> doc;
+    JsonObject object = doc.to<JsonObject>();
+    object["type"] = l_type;
     object["value"] = l_value;
-    serializeJson(doc, jsonString);     // convert JSON object to string
-    webSocket.broadcastTXT(jsonString); // send JSON string to all clients
+    serializeJson(doc, jsonString);
+    webSocket.broadcastTXT(jsonString);
 }
 
-// Simple function to send information to the web clients - partially from internet
 void sendJsonArray(String l_type, int l_array_values[]) {
-    String jsonString = ""; // create a JSON string for sending data to the client
+    String jsonString = "";
     const size_t CAPACITY = JSON_ARRAY_SIZE(ARRAY_LENGTH) + 100;
-    StaticJsonDocument<CAPACITY> doc; // create JSON container
+    StaticJsonDocument<CAPACITY> doc;
 
-    JsonObject object = doc.to<JsonObject>(); // create a JSON Object
-    object["type"] = l_type;                  // write data into the JSON object
+    JsonObject object = doc.to<JsonObject>();
+    object["type"] = l_type;
     JsonArray value = object.createNestedArray("value");
     for (int i = 0; i < ARRAY_LENGTH; i++) {
         value.add(l_array_values[i]);
     }
-    serializeJson(doc, jsonString);     // convert JSON object to string
-    webSocket.broadcastTXT(jsonString); // send JSON string to all clients
+    serializeJson(doc, jsonString);
+    webSocket.broadcastTXT(jsonString);
 }
 
 int distInMM = 0;
@@ -114,6 +112,10 @@ void handleWebLoop() {
     sendJsonArray("angleRange", sendRay);
 }
 
+// --------------------- END WEB CODE -------------------
+
+// --------------------- SONAR CODE ---------------------
+
 // can't use 0, 2, 15,16 or 17
 #define transmit0 19 // 38 //15
 #define transmit1 21 // 35 //2
@@ -124,7 +126,9 @@ void handleWebLoop() {
 #define transmit6 5
 #define transmit7 18
 
-#define PULSE_HALF_PERIOD 2831
+//One instruction cycle is ~4.26ns
+
+#define PULSE_HALF_PERIOD 2831 //positive pulse period in instruction cycles
 
 int TXArray[8] = {transmit0, transmit1, transmit2, transmit3, transmit4, transmit5, transmit6, transmit7};
 
@@ -132,16 +136,10 @@ int TXoutputStatus[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
 #define chirpPin 22
 
-// const int potPin = 34;
-// int potValue = 0;
 
-int pulseDelay = 24000000;
-// int pulseDelay = 2400;
-
-// 30000000
+int pulseDelay = 24000000; //time between chirps in instruction cycles
 int lastPulseTime = 0;
-int pulseCountTarget = 10; // was 10
-// int phaseTickOffset = -1583;
+int pulseCountTarget = 10; // number of times to toggle each pin in a single chirp
 int phaseTickOffset = 0;
 int pulseTrainStartTime = 0;
 uint32_t currentTime;
@@ -158,10 +156,10 @@ uint32_t lastActiveTime7 = 0;
 HardwareSerial SerialPort(2); // use UART2
 
 void setup() {
-    SerialPort.begin(38400, SERIAL_8E1, 16, 17);
+    SerialPort.begin(38400, SERIAL_8E1, 16, 17); //Start the UART2 port for MSP communication
     SerialPort.setTimeout(10);
     Serial.begin(115200);
-    Serial.setTimeout(20);
+    Serial.setTimeout(20); //VERY IMPORTANT line of code that prevents any Serial communication from locking up the code
     pinMode(transmit0, OUTPUT);
     pinMode(transmit1, OUTPUT);
     pinMode(transmit2, OUTPUT);
@@ -176,9 +174,10 @@ void setup() {
     setupServerStuff();
 }
 
+#define TX_ELEMENT_SPACING 1.14 // distance between elements in wavelengths
 int convertAngleToPhaseTickOffset(int angleDeg) {
     float angleRad = angleDeg * 3.14159265359 / 180;
-    float phaseTickOffsetFloat = 1.14 * sin(angleRad) * 2 * PULSE_HALF_PERIOD;
+    float phaseTickOffsetFloat = TX_ELEMENT_SPACING * sin(angleRad) * 2 * PULSE_HALF_PERIOD;
     int phaseTickOffsetInt = (int)phaseTickOffsetFloat;
     return phaseTickOffsetInt;
 }
@@ -189,9 +188,7 @@ void loop() {
     if (SerialPort.available()) {
         String distance = SerialPort.readString();
         distInMM = distance.toInt();
-        // Serial.println(distInMM);
         handleWebLoop();
-        // Serial.println(distance);
         GPIO.out_w1ts = ((uint32_t)1 << 13);
     } else {
         GPIO.out_w1tc = ((uint32_t)1 << 13);
@@ -199,10 +196,8 @@ void loop() {
 
     if (Serial.available()) {
         String inputAngle = Serial.readString();
-        // Serial.flush();
         targetAngle = inputAngle.toInt();
         phaseTickOffset = convertAngleToPhaseTickOffset(targetAngle);
-        // phaseTickOffset = targetAngle;
         Serial.println("New angle: " + (String)targetAngle + " New phaseTickOffset: " + (String)phaseTickOffset);
     }
 
@@ -219,6 +214,8 @@ void loop() {
 
         pulseTrainStartTime = currentTime;
         int indexToCheck;
+
+        // turn off all the pins using direct to register access - faster than digitalWrite
         GPIO.out_w1tc = ((uint32_t)1 << transmit0);
         GPIO.out_w1tc = ((uint32_t)1 << transmit1);
         GPIO.out_w1tc = ((uint32_t)1 << transmit2);
@@ -227,6 +224,7 @@ void loop() {
         GPIO.out_w1tc = ((uint32_t)1 << transmit5);
         GPIO.out_w1tc = ((uint32_t)1 << transmit6);
         GPIO.out_w1tc = ((uint32_t)1 << transmit7);
+
         currentTime = ESP.getCycleCount();
         phaseTickOffset = convertAngleToPhaseTickOffset(targetAngle);
         if (phaseTickOffset < 0) {
@@ -252,9 +250,6 @@ void loop() {
             lastActiveTime6 = currentTime + phaseTickOffset * 6;
             lastActiveTime7 = currentTime + phaseTickOffset * 7;
         }
-
-        // Serial.println("Phase offset: " + (String)phaseTickOffset + " lastActiveTime0: " + (String)lastActiveTime0 + " lastActiveTime1: " + (String)lastActiveTime1 + " lastActiveTime2: " + (String)lastActiveTime2 + " lastActiveTime3: " + (String)lastActiveTime3 + " lastActiveTime4: " + (String)lastActiveTime4 + " lastActiveTime5: " + (String)lastActiveTime5 + " lastActiveTime6: " + (String)lastActiveTime6 + " lastActiveTime7: " + (String)lastActiveTime7);
-        // Serial.println("Phase offset: " + (String)phaseTickOffset);
 
         while (toggleCountArray[indexToCheck] <= pulseCountTarget - 1) {
             int portOutToggle = 0;
@@ -309,6 +304,8 @@ void loop() {
         }
     }
 }
+
+// function to toggle the pins based on the bit mask toggleInt
 void writePort(int toggleInt) {
     for (int i = 0; i < 8; i++) {
         if (toggleInt & 1 << i) {
