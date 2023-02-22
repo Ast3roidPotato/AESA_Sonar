@@ -1,0 +1,33 @@
+@import '/styles/vars';
+@import '/styles/utils.module.scss';
+
+.canvasWrapper {
+    @extend .flexRow, .border; 
+    width: 80%;
+    height: 100%;
+    overflow: hidden;
+    width: 60vw;
+    // height: 42vw;
+    height: 100%;
+}
+
+.image {
+    // width: 100%;
+    height: 100%;
+    transform: rotate(180deg);
+}
+
+@media (orientation: portrait) {
+    .canvasWrapper {
+        width: 100%;
+        margin-top: 2vh;
+        height: 80%;
+    }
+
+    .image {
+        height: auto;
+        width: 100%;
+    }
+}
+
+

@@ -1,0 +1,14 @@
+@import '/styles/vars';
+
+.headerWrapper {
+    min-height: 10vh;
+    height: content;
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+}
+
+.title {
+    margin: auto;
+}

@@ -1,0 +1,46 @@
+@import '../styles/vars';
+@import '../styles/utils.module.scss';
+
+.outerWrapper {
+
+    width: 100vw;
+    height: 100vh;
+    position: absolute;
+    z-index: -1;
+    top: 0px;
+    left: 0px;
+    overflow: hidden;
+}
+
+.pageWrapper {
+    background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+    width: 110vw;
+    height: 110vh;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    color: $light;
+    font-family: 'Lato', sans-serif;
+    font-weight: 100;
+    font-size: 5vh;
+    overflow: hidden;
+}
+
+.contentOuterWrapper {
+    @extend .flexRow;
+    height: 90vh;
+    width: 98vw;
+}
+
+.contentInnerWrapper {
+    @extend .flexRow;
+    height: 95%;
+    width: 95%;
+}
+
+@media (orientation: portrait) {
+    .contentInnerWrapper {
+        flex-direction: column;
+        flex-flow: column-reverse;
+    }
+}

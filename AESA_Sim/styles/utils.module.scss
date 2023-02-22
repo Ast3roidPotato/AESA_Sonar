@@ -1,0 +1,21 @@
+@import './vars';
+
+
+.flexRow {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+.flexCol {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.border {
+    border: white solid 1px;
+    border-radius: 1vw;
+}
