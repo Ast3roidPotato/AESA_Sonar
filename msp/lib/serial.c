@@ -1,48 +1,23 @@
-// File Name: ece230_03_04ex0602template.c
-// ece230ex0602 template file by Jianjian Song 1-22-2023
-/*! \file */
-/******************************************************************************
- * MSP432 Lab Exercise 6-2 - eUSCI_A0 UART echo at 57600 baud using BRCLK = 12MHz
- * ECE230-03, -04 Winter 2022-2023
- * Description: This demo echoes back characters received via a PC serial port.
- *      SMCLK/ DCO is used as a clock source. The auto-clock enable feature is used
- *      by the eUSCI and SMCLK is turned off when the UART is idle and turned on when
- *      a receive edge is detected.
- *
- * Author:
- * Last-modified:
- *
- *                 MSP432P411x
- *             -------------------
- *         /|\|                   |
- *          | |                   |
- *          --|RST                |
- *            |      P1.3/UCA0TXD |----> PC (echo)
- *            |      P1.2/UCA0RXD |<---- PC
- *            |                   |
- *            |                   |
- *
- *******************************************************************************/
+/* Final ECE230 Project: MSP serial.c
+Authors: ECE230 example code, Jacob Consolvi, Evelyn Elmer, and Abigail Kurfman
+Description: This code sets up and runs a UART communication rptotocal with the ESP. Some code from Ex602 is used, 
+and some was modified for the project applications. 
+Last Revised: 2/21/23 
+*/
 #include "serial.h"
 #include "msp.h"
 #include <stdarg.h>
 #include <stdlib.h>
 
 // UART A0 IO pins
-//  P1.3/UCA0TXD |----> RX PC (echo)
-//   P1.2/UCA0RXD |<---- TX PC
 #define UARTA0port P1
 #define UARTA0pins BIT2 | BIT3
 
 // UART A0 IO pins on MSP432P4111 chip
-//  P1.3/UCA0TXD |----> RX PC (echo)
-//   P1.2/UCA0RXD |<---- TX PC
 #define UARTA0port P1
 #define UARTA0pins BIT2 | BIT3
 
 // UART A1 IO pins
-//  P2.3/UCA1TXD |----> RX PC (echo)
-//   P2.2/UCA1RXD |<---- TX PC
 #define UARTA1port P2
 #define UARTA1pins BIT2 | BIT3
 
@@ -70,22 +45,15 @@ void ConfigureUART_A0(void) {
     //  EUSCI_A0->CTLW0 |= EUSCI_A_CTLW0_SSEL__SMCLK | 1 << 14;
     /* Baud Rate calculation
      * Refer to Section 24.3.10 of Technical Reference manual
-     * BRCLK = 12000000, Baud rate = 57600
-     *
-     * TODO calculate N and determine values for UCBRx, UCBRFx, and UCBRSx
-     *          values used in next two TODOs
+     * BRCLK = 12000000, Baud rate = 38400
      */
     EUSCI_A0->BRW = ClockPrescalerValue * 1.05;
 
-    // TODO set clock prescaler in eUSCI_A0 baud rate control register
     EUSCI_A0->MCTLW = (SecondModulationStage << 8) + (FirstModulationStage << 4) + 1; // enalble oversampling
-    // TODO configure baud clock modulation in eUSCI_A0 modulation control register
 
     EUSCI_A0->CTLW0 &= ~EUSCI_A_CTLW0_SWRST; // Initialize eUSCI
     EUSCI_A0->IFG &= ~EUSCI_A_IFG_RXIFG;     // Clear eUSCI RX interrupt flag
-    //    EUSCI_A0->IE |= EUSCI_A_IE_RXIE;            // Enable USCI_A0 RX interrupt
 
-    //    NVIC->ISER[0] |= (1)<<EUSCIA0_IRQn;
 } // end ConfigureUART_A0(void)
 
 static void init() {
@@ -101,46 +69,6 @@ static void init() {
     CS->KEY = 0;                  // Lock CS module from unintended accesses
 
     ConfigureUART_A0();
-    /* Configure UART pins */
-    // P1->SEL0 |= BIT2 | BIT3; // set 2-UART pins as secondary function
-    // P1->SEL1 &= ~(BIT2 | BIT3);
-
-    // /* Configure UART
-    //  *  Asynchronous UART mode, 8O1 (8-bit data, odd parity, 1 stop bit),
-    //  *  LSB first, SMCLK clock source
-    //  */
-    // EUSCI_A0->CTLW0 |= EUSCI_A_CTLW0_SWRST; // Put eUSCI in reset
-
-    // // Enable odd parity; LSB first; 8-bit data; one stop bit;  UART mode; Asynchronous mode; SMCLK
-    // // bit 15 = 1 to enable parity; bit14=0 Old parity; bit13=0 for LSB first;
-    // // bit12=0 for 8-bit mode; bit11=0 for one stop bit; bits 10-9=00 for UART mode
-    // // bit8=0 for asynchronous mode;    bits7-6 = 0b10 or 0b11 for SMCLK
-    // //  TODO complete configuration of UART in eUSCI_A0 control register
-    // // UCACTLW0 = UCPEN | UCPAR | UCSSEL_2 | USSEL__2;
-    // EUSCI_A0->CTLW0 = EUSCI_A_CTLW0_PEN | EUSCI_A_CTLW0_SSEL__SMCLK;
-    // /* Baud Rate calculation
-    //  * Refer to Section 24.3.10 of Technical Reference manual
-    //  * BRCLK = 12000000, Baud rate = 57600
-    //  *
-    //  * TODO calculate N and determine values for UCBRx, UCBRFx, and UCBRSx
-    //  *          values used in next two TODOs
-    //  */
-    // // TODO assign clock prescaler in eUSCI_A0 baud rate control register
-    // EUSCI_A0->BRW = ;//13;
-
-    // // TODO configure baud clock 1st and 2nd stage modulation in eUSCI_A0 modulation control register
-
-    // EUSCI_A0->MCTLW = 37;
-
-    // EUSCI_A0->CTLW0 &= ~EUSCI_A_CTLW0_SWRST; // Initialize eUSCI
-    // EUSCI_A0->IFG &= ~EUSCI_A_IFG_RXIFG;     // Clear eUSCI RX interrupt flag
-    // // EUSCI_A0->IE |= EUSCI_A_IE_RXIE;         // Enable USCI_A0 RX interrupt
-
-    // // Enable global interrupt
-    // // __enable_irq();
-
-    // // Enable eUSCIA0 interrupt in NVIC module
-    // // NVIC->ISER[0] = (1 << EUSCIA0_IRQn);
 }
 
 // UART interrupt service routine
@@ -156,6 +84,7 @@ void EUSCIA0_IRQHandler(void) {
     }
 }
 
+// print char to UART pin
 static void printChar(char c) {
     // Wait for TX buffer to be empty
     while (!(EUSCI_A0->IFG & EUSCI_A_IFG_TXIFG))
@@ -165,6 +94,7 @@ static void printChar(char c) {
     EUSCI_A0->TXBUF = c;
 }
 
+// split up string to print to UART pin
 static void print(char *string, ...) {
     char buffer[100];
     char *ptr = buffer;
@@ -178,12 +108,14 @@ static void print(char *string, ...) {
     }
 }
 
+// prints the string, then adds a new line after
 static void println(char *string, ...) {
     print(string);
     printChar('\r');
     printChar('\n');
 }
 
+// reads char data from the UART pin
 static void readChar() {
     char receivedChar;
     if ((EUSCI_A0->IFG & EUSCI_A_IFG_RXIFG) == EUSCI_A_IFG_RXIFG) {
@@ -194,6 +126,7 @@ static void readChar() {
     return receivedChar;
 }
 
+// constructors for serial class
 static struct Serial new() {
     init();
     return (struct Serial){

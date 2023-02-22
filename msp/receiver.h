@@ -2,10 +2,11 @@
 /*!
  * transmitter.h
  *
- * Description:
+ * Description: Headerfile to run the reciever pin, timer, and handle calculations. This file sets up pin 3.0 to listen
+ * for the echo, starts a timer to count how long the pulse width is, and calculates distance. 
  *
  *  Created on: 02/12/23
- *      Author:
+ *      Author: ECE230 example code, Jacob Consolvi, Evelyn Elmer, and Abigail Kurfman
  */
 
 #ifndef RECEIVER_H_
@@ -41,7 +42,7 @@ extern void startTimer(void);
 extern void stopTimer(void);
 /*Gets the timer value of the echo*/
 extern int getEchoTime(void);
-
+/*Calculates distance traveled by sonar beam*/
 extern int getDistance(void);
 
 //*****************************************************************************
